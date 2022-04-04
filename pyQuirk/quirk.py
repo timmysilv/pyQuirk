@@ -1,6 +1,8 @@
 import ipywidgets as widgets
 import re
 from traitlets import Unicode, Integer, Float
+
+import pennylane as qml
 # See js/lib/quirk.js for the frontend counterpart to this file.
 
 @widgets.register
@@ -43,7 +45,7 @@ class Quirk(widgets.DOMWidget):
     def update_from_qasm(self, qasm):
         self.value = qasm_to_quirk(qasm)
 
-gates = {
+qasm_gates = {
     "h": "H",
     "x": "X",
     "y": "Y",
@@ -138,7 +140,7 @@ def qasm_to_quirk(qasm):
                     col.append("•")
                     qubit_to_column[qb] = colnum + 1
                 elif qb == target:
-                    col.append(gates[gate.replace("c", "").replace("c", "")])
+                    col.append(qasm_gates[gate.replace("c", "").replace("c", "")])
                     qubit_to_column[qb] = colnum + 1
                 else:
                     col.append(1)
@@ -162,7 +164,7 @@ def qasm_to_quirk(qasm):
             #print(qubit_to_column)
             if len(cols[qubit_to_column[target]]) <= target:
                 cols[qubit_to_column[target]] += [1 for _ in range(target - len(cols[qubit_to_column[target]]) + 1)]
-            cols[qubit_to_column[target]][target] = gates[gate]
+            cols[qubit_to_column[target]][target] = qasm_gates[gate]
 
             qubit_to_column[target] += 1
             while qubit_to_column[target] in control_cols:
@@ -170,3 +172,16 @@ def qasm_to_quirk(qasm):
 
         cols.append([])
     return str(cols)
+
+pennylane_operations = {
+    qml.ops.qubit.non_parametric_ops.Hadamard: "H"
+}
+
+def get_pennylane_operation(obj):
+    return pennylane_operations[type(obj)]
+
+def pennylane_to_quirk(qnode):
+    tape = qnode.tape
+    operations = tape.operations
+    measurements = tape.measurements
+    return ""
