@@ -174,14 +174,23 @@ def qasm_to_quirk(qasm):
     return str(cols)
 
 pennylane_operations = {
-    qml.ops.qubit.non_parametric_ops.Hadamard: "H"
+    qml.ops.Hadamard: "H",
+    qml.ops.Rot: "RX",
 }
-
-def get_pennylane_operation(obj):
-    return pennylane_operations[type(obj)]
+get_pennylane_operation = lambda x: pennylane_operations[type(obj)]
 
 def pennylane_to_quirk(qnode):
     tape = qnode.tape
     operations = tape.operations
     measurements = tape.measurements
+    cols = []
+
+    for op in operations:
+        if isinstance(op, qml.ops.Rot):
+            composition_ops = op.composition()
+
+    for mmt in measurements:
+        obs = [mmt]
+        if isinstance(mmt, qml.operation.Tensor):
+            obs = mmt.obs
     return ""
